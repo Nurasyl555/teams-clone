@@ -1,60 +1,60 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
-# Create your models here.
-from typing import Any
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-
-)
-from users.manager import CustomUserManager
 from apps.abstract.models import AbstractModel
-from models import (
-    EmailField,
-    CharField,
-    BooleanField,
-    DateTimeField,
+from apps.users.manager import CustomUserManager
 
-)
+
 class CustomUser(
     AbstractBaseUser,
-    AbstractModel
-    ):
-    emial = EmailField(
+    AbstractModel,
+    PermissionsMixin,
+):
+
+    email = models.EmailField(
         unique=True,
+        db_index=True,
     )
-    password = CharField(
-        max_length=128,
-    )
-    first_name = CharField(
+
+    first_name = models.CharField(
         max_length=255,
+        blank=True,
     )
-    last_name = CharField(
+
+    last_name = models.CharField(
         max_length=255,
+        blank=True,
     )
-    is_active = BooleanField(
+
+    is_active = models.BooleanField(
         default=True,
     )
-    is_staff = BooleanField(
+
+    is_staff = models.BooleanField(
         default=False,
     )
-    is_superuser = BooleanField(
-        default=False,
-    )
-    date_joined = DateTimeField(
+
+    date_joined = models.DateTimeField(
         auto_now_add=True,
     )
+
     last_login = models.DateTimeField(
         auto_now=True,
+        null=True,
+        blank=True,
     )
 
-USERNAME_FIELD = "email"
-REQUIRED_FIELDS = ["first_name", "last_name"]
+    USERNAME_FIELD = "email"
 
-object = CustomUserManager()
-class Meta:
-    verbose_name = "user"
+    EMAIL_FIELD = "email"
 
-def __str__(self):
-    return f"Email: {self.email}, Name: {self.first_name} ,Last Name: {self.last_name}"
-    
+    REQUIRED_FIELDS = ["first_name", "last_name"]
 
+    objects = CustomUserManager()
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+
+    def __str__(self):
+        return f"{self.email}"

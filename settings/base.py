@@ -19,11 +19,12 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     # Local apps  ← team members will add their apps here
-    "apps.users",
     "apps.abstract",
-    
-]
+    "apps.users",
 
+
+]
+AUTH_USER_MODEL = "users.CustomUser"
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
