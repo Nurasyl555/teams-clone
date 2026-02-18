@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams Clone - ER Diagram</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .diagram-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .table {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 3px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .table:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .table-inner {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-weight: bold;
+            font-size: 1.3em;
+            text-align: center;
+        }
+        
+        .table-body {
+            padding: 20px;
+        }
+        
+        .field {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .field.pk {
+            background: #fef5e7;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .field.fk {
+            background: #ebf5fb;
+            border-left: 4px solid #3498db;
+        }
+        
+        .field.unique {
+            background: #f4ecf7;
+            border-left: 4px solid #8e44ad;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .badge.pk {
+            background: #f39c12;
+        }
+        
+        .badge.fk {
+            background: #3498db;
+        }
+        
+        .badge.unique {
+            background: #8e44ad;
+        }
+        
+        .relationships {
+            margin-top: 40px;
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 12px;
+        }
+        
+        .relationships h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .relationship {
+            background: white;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .relationship-type {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #667eea;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.85em;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .legend {
+            margin-top: 40px;
+            background: #2d3748;
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+        
+        .legend h3 {
+            margin-bottom: 15px;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+        }
+        
+        @media (max-width: 768px) {
+            .diagram-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Teams Clone - Database Schema</h1>
+        <p class="subtitle">Entity-Relationship Diagram</p>
+        
+        <div class="diagram-container">
+            <!-- USER TABLE -->
+            <div class="table">
+                <div class="table-inner">
+                    <div class="table-header">👤 USER</div>
+                    <div class="table-body">
+                        <div class="field pk">
+                            <span class="badge pk">PK</span>
+                            <span>id</span>
+                        </div>
+                        <div class="field unique">
+                            <span class="badge unique">UK</span>
+                            <span>email</span>
+                        </div>
+                        <div class="field">password</div>
+                        <div class="field">first_name</div>
+                        <div class="field">last_name</div>
+                        <div class="field">is_active</div>
+                        <div class="field">is_staff</div>
+                        <div class="field">is_superuser</div>
+                        <div class="field">date_joined</div>
+                        <div class="field">last_login</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TEAM TABLE -->
+            <div class="table">
+                <div class="table-inner">
+                    <div class="table-header">🏢 TEAM</div>
+                    <div class="table-body">
+                        <div class="field pk">
+                            <span class="badge pk">PK</span>
+                            <span>id</span>
+                        </div>
+                        <div class="field">name</div>
+                        <div class="field">description</div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>owner_id → User</span>
+                        </div>
+                        <div class="field">created_at</div>
+                        <div class="field">updated_at</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TEAM MEMBERSHIP TABLE -->
+            <div class="table">
+                <div class="table-inner">
+                    <div class="table-header">👥 TEAM_MEMBERSHIP</div>
+                    <div class="table-body">
+                        <div class="field pk">
+                            <span class="badge pk">PK</span>
+                            <span>id</span>
+                        </div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>team_id → Team</span>
+                        </div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>user_id → User</span>
+                        </div>
+                        <div class="field">joined_at</div>
+                        <div class="field">role</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CHANNEL TABLE -->
+            <div class="table">
+                <div class="table-inner">
+                    <div class="table-header">📢 CHANNEL</div>
+                    <div class="table-body">
+                        <div class="field pk">
+                            <span class="badge pk">PK</span>
+                            <span>id</span>
+                        </div>
+                        <div class="field">name</div>
+                        <div class="field">description</div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>team_id → Team</span>
+                        </div>
+                        <div class="field">is_private</div>
+                        <div class="field">created_at</div>
+                        <div class="field">updated_at</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CHANNEL MEMBERSHIP TABLE -->
+            <div class="table">
+                <div class="table-inner">
+                    <div class="table-header">🔒 CHANNEL_MEMBERSHIP</div>
+                    <div class="table-body">
+                        <div class="field pk">
+                            <span class="badge pk">PK</span>
+                            <span>id</span>
+                        </div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>channel_id → Channel</span>
+                        </div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>user_id → User</span>
+                        </div>
+                        <div class="field">joined_at</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- MESSAGE TABLE -->
+            <div class="table">
+                <div class="table-inner">
+                    <div class="table-header">💬 MESSAGE</div>
+                    <div class="table-body">
+                        <div class="field pk">
+                            <span class="badge pk">PK</span>
+                            <span>id</span>
+                        </div>
+                        <div class="field">content</div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>author_id → User</span>
+                        </div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>channel_id → Channel</span>
+                        </div>
+                        <div class="field fk">
+                            <span class="badge fk">FK</span>
+                            <span>parent_msg_id → Message</span>
+                        </div>
+                        <div class="field">created_at</div>
+                        <div class="field">updated_at</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RELATIONSHIPS -->
+        <div class="relationships">
+            <h2>🔗 Relationships Between Tables</h2>
+            
+            <div class="relationship">
+                <span class="relationship-type">1:N</span>
+                <strong>User → Team:</strong> One user can own many teams (owner relationship)
+            </div>
+            
+            <div class="relationship">
+                <span class="relationship-type">M:N</span>
+                <strong>User ↔ Team:</strong> Users can be members of multiple teams (via TeamMembership)
+            </div>
+            
+            <div class="relationship">
+                <span class="relationship-type">1:N</span>
+                <strong>Team → Channel:</strong> One team can have many channels
+            </div>
+            
+            <div class="relationship">
+                <span class="relationship-type">M:N</span>
+                <strong>User ↔ Channel:</strong> Users can be members of private channels (via ChannelMembership)
+            </div>
+            
+            <div class="relationship">
+                <span class="relationship-type">1:N</span>
+                <strong>User → Message:</strong> One user can write many messages (author relationship)
+            </div>
+            
+            <div class="relationship">
+                <span class="relationship-type">1:N</span>
+                <strong>Channel → Message:</strong> One channel contains many messages
+            </div>
+            
+            <div class="relationship">
+                <span class="relationship-type">1:N</span>
+                <strong>Message → Message:</strong> One message can have many replies (self-reference for threads)
+            </div>
+        </div>
+        
+        <!-- LEGEND -->
+        <div class="legend">
+            <h3>📖 Legend</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f39c12;"></div>
+                    <div>
+                        <strong>PK</strong> - Primary Key
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #3498db;"></div>
+                    <div>
+                        <strong>FK</strong> - Foreign Key
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8e44ad;"></div>
+                    <div>
+                        <strong>UK</strong> - Unique Key
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #667eea;"></div>
+                    <div>
+                        <strong>1:N</strong> - One-to-Many
+                    </div>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #764ba2;"></div>
+                    <div>
+                        <strong>M:N</strong> - Many-to-Many
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

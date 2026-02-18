@@ -1,0 +1,119 @@
+// Teams Clone - ER Diagram
+// Use this at: https://dbdiagram.io/
+// Instructions: Copy this entire text and paste it into dbdiagram.io editor
+
+Project TeamsClone {
+  database_type: 'PostgreSQL'
+  Note: 'Teams Clone - Microsoft Teams Clone Database Schema'
+}
+
+// ==================== USERS ====================
+Table users {
+  id integer [pk, increment, note: 'Primary Key']
+  email varchar(255) [unique, not null, note: 'Login field - must be unique']
+  password varchar(128) [not null, note: 'Hashed password']
+  first_name varchar(150) [note: 'User first name']
+  last_name varchar(150) [note: 'User last name']
+  is_active boolean [default: true, note: 'Is user active']
+  is_staff boolean [default: false, note: 'Can access admin']
+  is_superuser boolean [default: false, note: 'Has all permissions']
+  date_joined timestamp [default: `now()`, note: 'Registration date']
+  last_login timestamp [null, note: 'Last login timestamp']
+  
+  Note: 'Custom User Model - email is the main login field'
+  Indexes {
+    email [unique]
+  }
+}
+
+// ==================== TEAMS ====================
+Table teams {
+  id integer [pk, increment]
+  name varchar(200) [not null, note: 'Team/Workspace name']
+  description text [null, note: 'Team description']
+  owner_id integer [not null, ref: > users.id, note: 'Team creator/owner']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  Note: 'Teams/Workspaces - main organizational unit'
+  Indexes {
+    owner_id
+    created_at
+  }
+}
+
+// Many-to-Many relationship: Team Members
+Table team_members {
+  id integer [pk, increment]
+  team_id integer [not null, ref: > teams.id]
+  user_id integer [not null, ref: > users.id]
+  joined_at timestamp [default: `now()`]
+  role varchar(50) [default: 'member', note: 'member, admin, etc']
+  
+  Note: 'Team membership - users can be members of multiple teams'
+  Indexes {
+    (team_id, user_id) [unique]
+    team_id
+    user_id
+  }
+}
+
+// ==================== CHANNELS ====================
+Table channels {
+  id integer [pk, increment]
+  name varchar(200) [not null, note: 'Channel name']
+  description text [null, note: 'Channel description']
+  team_id integer [not null, ref: > teams.id, note: 'Parent team']
+  is_private boolean [default: false, note: 'Private channel with limited access']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  Note: 'Channels within teams - like #general, #random'
+  Indexes {
+    team_id
+    (team_id, name)
+  }
+}
+
+// Many-to-Many relationship: Channel Members (for private channels)
+Table channel_members {
+  id integer [pk, increment]
+  channel_id integer [not null, ref: > channels.id]
+  user_id integer [not null, ref: > users.id]
+  joined_at timestamp [default: `now()`]
+  
+  Note: 'Channel membership - only for private channels'
+  Indexes {
+    (channel_id, user_id) [unique]
+    channel_id
+    user_id
+  }
+}
+
+// ==================== MESSAGES ====================
+Table messages {
+  id integer [pk, increment]
+  content text [not null, note: 'Message content']
+  author_id integer [not null, ref: > users.id, note: 'Message author']
+  channel_id integer [not null, ref: > channels.id, note: 'Channel where message posted']
+  parent_message_id integer [null, ref: > messages.id, note: 'Parent message for replies/threads']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+  
+  Note: 'Messages in channels - supports threading via parent_message_id'
+  Indexes {
+    channel_id
+    author_id
+    parent_message_id
+    (channel_id, created_at)
+  }
+}
+
+// ==================== RELATIONSHIPS SUMMARY ====================
+// users.id 1--* teams.owner_id (One user owns many teams)
+// users.id *--* teams.id (Many users are members of many teams) via team_members
+// teams.id 1--* channels.team_id (One team has many channels)
+// users.id *--* channels.id (Many users are members of many private channels) via channel_members
+// users.id 1--* messages.author_id (One user writes many messages)
+// channels.id 1--* messages.channel_id (One channel has many messages)
+// messages.id 1--* messages.parent_message_id (One message has many replies)
