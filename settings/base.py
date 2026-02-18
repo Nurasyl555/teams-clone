@@ -19,6 +19,9 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "django_filters",
     # Local apps  ← team members will add their apps here
+    "apps.users",
+    "apps.abstract",
+    
 ]
 
 MIDDLEWARE = [
@@ -30,6 +33,11 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if DEBUG:
+    INSTALLED_APPS += ["debug_toolbar"]
+    MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
+    INTERNAL_IPS = ["127.0.0.1"]
+
 
 ROOT_URLCONF = "settings.urls"
 
