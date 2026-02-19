@@ -5,8 +5,8 @@ class Command(BaseCommand):
     help = "Seed the database with initial users"
 
     def handle(self, *args, **options):
-        for i in range (20):
-            email = f"user{i}@example.com"
+        for i in range (20,30):
+            email = f"user{i}@gmail.com"
             if CustomUser.objects.filter(email=email).exists():
                 continue
             CustomUser.objects.create_user(

@@ -15,6 +15,7 @@ from rest_framework.serializers import (
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from apps.users.models import CustomUser
+from rest_framework import serializers
 
 logger = logging.getLogger(__name__)
 
@@ -134,3 +135,19 @@ class UserListSerializer(ModelSerializer):
             "is_active",
             "is_superuser",
         )
+
+class LogoutSerializer(Serializer):
+    refresh = CharField(write_only=True)
+
+class TokenPairResponseSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+
+class MessageResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+
+class ErrorResponseSerializer(serializers.Serializer):
+    error = serializers.CharField()
+
+class AccessTokenResponseSerializer(serializers.Serializer):
+    access = serializers.CharField()
