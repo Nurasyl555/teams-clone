@@ -39,6 +39,71 @@ if DEBUG:
     MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"]
 
+"logging"
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "[{levelname}] {message}",
+            "style": "{",
+        },
+        "verbose": {
+            "format": "[{asctime}] {levelname} "
+            "{name} {module}.{funcName}: {lineno} - {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "level": "DEBUG",
+            "formatter": "simple",
+        },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "WARNING",
+            "filename": "logs/app.log",
+            "maxBytes": 5 * 1024 * 1024,  # 10 MB
+            "backupCount": 3,
+            "formatter": "verbose",
+            "encoding": "utf-8",
+        },
+        "debug_only": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "DEBUG",
+            "filename": "logs/debug_requests.log",
+            "maxBytes": 5 * 1024 * 1024,  # 10 MB
+            "backupCount": 3,
+            "formatter": "verbose",
+            "filters": ["require_debug_true"],
+            "encoding": "utf-8",
+        },
+    },
+    "loggers": {
+        "apps.users": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "apps.blog": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["file", "debug_only"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}
+
 
 ROOT_URLCONF = "settings.urls"
 
