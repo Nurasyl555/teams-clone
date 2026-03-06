@@ -91,7 +91,7 @@ class AssigmentsSubmissionsSerializers(ModelSerializer):
     """
     Assigmnets Submissions
     """
-    assignment = ShortAssigmentsSerializers()
+    assignment = ShortAssigmentsSerializers(read_only=True)
     student_info = SerializerMethodField()
 
     class Meta:
