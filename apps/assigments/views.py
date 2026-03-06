@@ -382,7 +382,7 @@ class AssigmentsViewSet(ViewSet):
     @action(
         detail=True,
         methods=["post"],
-        url_path="grade/(?P<submission_id>[^/.]+)"
+        url_path="grade"
     )
     def grade(self, request, pk=None, submission_id=None):
         
@@ -419,7 +419,7 @@ class AssigmentsViewSet(ViewSet):
         return Response(
             {
                 "message": "Student graded successfully",
-                "data": serializer.data
+                "data": AssigmentsSubmissionsSerializers(serializer).data
             }
         )
 

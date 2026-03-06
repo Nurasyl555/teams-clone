@@ -2,7 +2,8 @@
 from rest_framework.serializers import (
     ModelSerializer,
     SerializerMethodField,
-    EmailField
+    EmailField,
+    ValidationError
 )
 
 #Django modules
@@ -176,10 +177,21 @@ class SubmissionListSerializer(ModelSerializer):
         ]
 
 
-class GradeSubmissionSerializer(ModelSerializer):
+    def update(self, instance, validated_data):
 
-    class Meta:
-        model = Assignment_Submissions
-        fields = ['points_awarded']
+        if not instance.submitted:
+            raise ValidationError(
+                {"error": "Student has not submitted the assignment yet."}
+            )
 
+        points = validated_data.get('points_awarded')
 
+        if points > instance.assigment.max_points:
+            raise ValidationError(
+                {"error": "Points exceed assignment max points."}
+            )
+
+        instance.points_awarded = points
+        instance.save()
+
+        return instance
