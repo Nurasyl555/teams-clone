@@ -18,8 +18,8 @@ from apps.team.models import Team
 from apps.users.models import CustomUser
 
 
-class Assignments(AbstractModel):
-    team_id = ForeignKey(
+class Assignments(Model):
+    team = ForeignKey(
         Team,
         on_delete = CASCADE,
         related_name= 'team_id'
@@ -47,15 +47,15 @@ class Assignment_Submissions(Model):
         ('upcoming', 'Upcoming'),
         ('overdue', 'Overdue'),
         ('completed', 'Completed'),
-        ('completed_late','Completed_Late')
+        ('completed_late','Completed_Late'),
     ]   
 
-    assigment = ForeignKey(
+    assignment = ForeignKey(
         Assignments,
         on_delete=CASCADE,
         related_name='submissions'
     )
-    student_id = ForeignKey(
+    student = ForeignKey(
         CustomUser,
         on_delete=CASCADE,
         related_name='student'

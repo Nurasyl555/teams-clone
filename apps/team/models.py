@@ -88,8 +88,8 @@ class TeamMembership(Model):
         max_length=150,
         default='member',
         choices=[
-            {'admin', 'Admin'},
-            {'member', 'Member'},
+            ('admin', 'Admin'),
+            ('member', 'Member'),
         ]
     )
 

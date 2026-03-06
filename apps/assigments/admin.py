@@ -9,7 +9,7 @@ from .models import (
 @register(Assignments)
 class AssigmnetsAdmin(ModelAdmin):
     list_display = (
-        'team_id',
+        'team',
         'title',
         'due_data',
         'max_points'
@@ -21,7 +21,7 @@ class AssigmnetsAdmin(ModelAdmin):
 @register(Assignment_Submissions)
 class Assignment_SubmissionsAdmin(ModelAdmin):
     list_display = (
-        'assigment_id',
+        'assignment',
         'status',
     )
     list_editable = ('status',)

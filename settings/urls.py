@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/channels/', include('apps.channels.urls')),
     path("api/", include("apps.messages.urls")),
     path("api/assignment/",include("apps.assigments.urls")),
+
     
     # API schema & docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
