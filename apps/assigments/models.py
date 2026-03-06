@@ -8,9 +8,11 @@ from django.db.models import (
     IntegerField,
     FloatField,
     BooleanField,
-    DateField
-
+    DateField,
+    FileField
+    
 )
+from apps.abstract.models import AbstractModel
 
 from apps.team.models import Team
 from apps.users.models import CustomUser
@@ -57,6 +59,11 @@ class Assignment_Submissions(Model):
         CustomUser,
         on_delete=CASCADE,
         related_name='student'
+    )
+    file = FileField(
+        upload_to='assignments/',
+        null=True,
+        blank=True
     )
     status = CharField(
         max_length=20,
