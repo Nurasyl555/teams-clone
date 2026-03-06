@@ -1,5 +1,6 @@
 #Python modules
 import logging
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 #Rest modules
 from django.shortcuts import render
@@ -15,8 +16,9 @@ from rest_framework.status import (
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Message
-from .serializers import (
+from apps.messages.permissions import IsAuthorOrReadOnly
+from apps.messages.models import Message
+from apps.messages.serializers import (
     MessageSerializer,
     CreateMessageSerializer,
     UpdateMessageSerializer,
@@ -34,7 +36,7 @@ class MessageViewSet(ViewSet):
         DELETE api/messages/{id}/      - delete message
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
 
     def get_message_or_404(
         self,
@@ -70,7 +72,19 @@ class MessageViewSet(ViewSet):
             return False
         
 
-
+    @extend_schema(
+            summary="List messages",
+            description="Get all messages. Filter by channel_id using ?channel=<id>",
+            parameters=[
+                OpenApiParameter(
+                    name='channel',
+                    description='Filter by channel ID',
+                    required=False,
+                    type=int
+                ),
+            ],
+            responses={200: MessageSerializer(many=True)}
+    )
     def list(self, request: Request) -> Response:
         """
         GET api/messages/ — list messages
@@ -104,6 +118,14 @@ class MessageViewSet(ViewSet):
             status=HTTP_200_OK,
         )
     
+    @extend_schema(
+            summary="Retrieve message",
+            description="GEt detail of specific message",
+            responses={
+                200: MessageSerializer,
+                404: {"description": "Message not found"}
+            }
+    )
     def retrieve(self, request: Request, pk: int = None) -> Response:
         """GET api/messages/{id}/ — retrieve one message"""
         user = request.user
@@ -133,6 +155,15 @@ class MessageViewSet(ViewSet):
             status=HTTP_200_OK,
         )
 
+    @extend_schema(
+            summary="Create message",
+            description="Create a new message in channel. Optionally reply to another message",
+            request=CreateMessageSerializer,
+            responses={
+                201: MessageSerializer,
+                400: {'description': "Validation error"}
+            }
+    )
     def create(self, request: Request) -> Response:
         """POST api/messages/ — create a message"""
         serializer = CreateMessageSerializer(
@@ -161,6 +192,16 @@ class MessageViewSet(ViewSet):
             status=HTTP_201_CREATED,
         )
 
+    @extend_schema(
+            summary="update message",
+            description="Update message content (only auther can edit)",
+            request=UpdateMessageSerializer,
+            responses={
+                200 : MessageSerializer,
+                400: {'description': "validation error"},
+                403: {'description': "Not authorized"}
+            }
+    )
     def partial_update(self, request: Request, pk: int = None) -> Response:
         """PATCH api/messages/{id}/ — update message (content only)"""
         user = request.user
@@ -206,7 +247,15 @@ class MessageViewSet(ViewSet):
             },
             status=HTTP_200_OK,
         )
-
+    
+    @extend_schema(
+            summary="Delete message",
+            description="Delete message in channel (only author can delete)",
+            responses={
+                204: {'description': 'Message deleted'},
+                403: {'description': "Not authorized"},
+            }
+    )
     def destroy(self, request: Request, pk: int = None) -> Response:
         """DELETE api/messages/{id}/ — delete message"""
         user = request.user

@@ -89,7 +89,7 @@ class AssigmentsSubmissionsSerializers(ModelSerializer):
     """
     Assigmnets Submissions
     """
-    assigment_id = ShortAssigmentsSerializers()
+    assignment = ShortAssigmentsSerializers()
     student_info = SerializerMethodField()
 
     class Meta:
