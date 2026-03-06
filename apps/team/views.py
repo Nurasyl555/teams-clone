@@ -351,7 +351,7 @@ class TeamViewSet(ViewSet):
         
         if request.method == "POST":
             logger.info('Create assigment by team and team_id: %s',team)
-            return self._create_assigments(request,team)
+            return self._create_assignment(request,team)
         
     def _list_assigments(
         self,
@@ -446,6 +446,8 @@ class TeamViewSet(ViewSet):
         if request.method == 'DELETE':
             logger.info('Deleting member: team=%s', team.id)
             return self._delete_members(request, team)
+        
+        return Response(status=HTTP_400_BAD_REQUEST)
 
 
     def _list_members(
@@ -460,8 +462,6 @@ class TeamViewSet(ViewSet):
             filtering
         ).select_related(
             'user'
-        ).prefetch_related(
-            'members'
         )
 
         serializer = TeamMembershipSerializer(

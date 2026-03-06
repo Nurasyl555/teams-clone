@@ -177,6 +177,17 @@ class SubmissionListSerializer(ModelSerializer):
         ]
 
 
+
+    
+    
+class GradeSubmissionSerializer(ModelSerializer):
+    class Meta:
+        model = Assignment_Submissions
+        fields = [
+            'points_awwarded'
+        ]
+
+        
     def update(self, instance, validated_data):
 
         if not instance.submitted:

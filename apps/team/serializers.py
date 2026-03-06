@@ -103,15 +103,25 @@ class CreateTeamSerializer(ModelSerializer):
         """Create Team"""
 
         request = self.context['request']
+
         logger.info(
             'User %s creating team: %s',
             request.user.id,
             validated_data.get('name')
         )
-        return Team.objects.create(
+
+        team = Team.objects.create(
             owner=request.user,
             **validated_data
+        )         
+
+        TeamMembership.objects.create(
+            team=team,
+            user=request.user,
+            role='admin'
         )
+
+        return team
 
 
 class UpdateTeamSerializer(ModelSerializer):
