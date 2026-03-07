@@ -91,7 +91,7 @@ class AssigmentsSubmissionsSerializers(ModelSerializer):
     """
     Assigmnets Submissions
     """
-    assignment = ShortAssigmentsSerializers()
+    assignment = ShortAssigmentsSerializers(read_only=True)
     student_info = SerializerMethodField()
 
     class Meta:
@@ -177,6 +177,17 @@ class SubmissionListSerializer(ModelSerializer):
         ]
 
 
+
+    
+    
+class GradeSubmissionSerializer(ModelSerializer):
+    class Meta:
+        model = Assignment_Submissions
+        fields = [
+            'points_awwarded'
+        ]
+
+        
     def update(self, instance, validated_data):
 
         if not instance.submitted:
