@@ -19,13 +19,10 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import (
     extend_schema,
     extend_schema_view,
-    OpenApiParameter,
     OpenApiResponse,
     OpenApiExample,
 )
 from drf_spectacular.types import OpenApiTypes
-
-from .permissions import IsTeamOwnerOrAdmin, IsTeamMember
 
 # Project modules
 from .serializers import (
@@ -45,6 +42,9 @@ from .permissions import (
     IsTeamOwnerOrAdmin,
     IsTeamMember
 )
+
+from .permissions import IsTeamOwnerOrAdmin, IsTeamMember
+
 from .filters import build_team_q,build_membership_q
 
 logger = logging.getLogger(__name__)
