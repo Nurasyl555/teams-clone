@@ -22,8 +22,4 @@ class IsOwnerOrAdmin(BasePermission):
         if request.method in SAFE_METHODS:
             return True
 
-        return (
-            request.user.is_staff
-            or request.user.is_superuser
-            or obj == request.user
-        )
+        return request.user.is_staff or request.user.is_superuser or obj == request.user

@@ -1,11 +1,9 @@
-#Python modules
+# Python modules
 import logging
 
-#Rest modules
+# Rest modules
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.status import (
     HTTP_200_OK,
     HTTP_201_CREATED,
@@ -13,9 +11,10 @@ from rest_framework.status import (
     HTTP_404_NOT_FOUND,
     HTTP_204_NO_CONTENT,
 )
-from django.utils.translation import gettext_lazy as _
+from rest_framework.viewsets import ViewSet
+from rest_framework.permissions import IsAuthenticated
 
-#Project modules
+# Project modules
 from .models import Message
 from .serializers import (
     MessageSerializer,
@@ -25,15 +24,11 @@ from .serializers import (
 from .filters import build_message_q
 from .tasks import send_message_notification
 from .permissions import IsAuthorOrReadOnly
-from apps.utils.mixins import (
-    TeamAccessMixin,
-    LoggingMixin
-)
 
 logger = logging.getLogger(__name__)
 
 
-class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
+class MessageViewSet(ViewSet):
     """
     Message endpoints:
         GET    api/messages/           - list messages (optionally ?channel=<id>)
@@ -45,12 +40,7 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
 
     permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
 
-    def get_message_or_404(
-        self,
-        pk: int
-    ) -> tuple[
-        Message | None, Response | None
-        ]:
+    def get_message_or_404(self, pk: int) -> tuple[Message | None, Response | None]:
         """Helper: returns (message, None) or (None, 404 Response)"""
         try:
             message = Message.objects.select_related(
@@ -62,15 +52,10 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
         except Message.DoesNotExist:
             logger.warning("Message not found: id=%s", pk)
             return None, Response(
-                {"error": _("Message not found")},
-                status=HTTP_404_NOT_FOUND
+                {"error": "Message not found"}, status=HTTP_404_NOT_FOUND
             )
-        
-    def _user_has_channel_access(
-        self,
-        user,
-        channel
-    ) -> bool:
+
+    def _user_has_channel_access(self, user, channel) -> bool:
         """
         True если user состоит в team канала.
         Ожидается: channel.team.members (ManyToMany на users)
@@ -79,54 +64,45 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
             return channel.team.members.filter(id=user.id).exists()
         except Exception:
             return False
-        
-    def list(
-        self, 
-        request: Request
-    ) -> dict:
+
+    def list(self, request: Request) -> Response:
         """
         GET api/messages/ — list messages
         Optional filter: ?channel=<id>
         """
         user = request.user
 
-        queryset = Message.objects.select_related(
-            "author",
-            "channel",
-            "channel__team",
-        ).prefetch_related(
-            "replies"
-        ).filter(
-            channel__team__members__id=user.id
-        ).order_by("created_at")
+        queryset = (
+            Message.objects.select_related(
+                "author",
+                "channel",
+                "channel__team",
+            )
+            .prefetch_related("replies")
+            .filter(channel__team__members__id=user.id)
+            .order_by("created_at")
+        )
 
         queryset = build_message_q(request, queryset)
 
         serializer = MessageSerializer(queryset, many=True)
         logger.debug(
             "Message list requested by user=%s params=%s",
-            user.id, request.query_params.dict(),
+            user.id,
+            request.query_params.dict(),
         )
 
         return Response(
             {
-                "message": _("List of messages"),
+                "message": "List of messages",
                 "count": len(serializer.data),
                 "data": serializer.data,
             },
             status=HTTP_200_OK,
         )
-    
-    def retrieve(
-        self, 
-        request: Request, 
-        pk: int = None
-        ) -> dict:
 
-        """
-        GET api/messages/{id}/ — retrieve one message
-        """
-
+    def retrieve(self, request: Request, pk: int = None) -> Response:
+        """GET api/messages/{id}/ — retrieve one message"""
         user = request.user
         message, error = self.get_message_or_404(pk)
         if error:
@@ -136,10 +112,13 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
         if not self._user_has_channel_access(user, message.channel):
             logger.warning(
                 "Message retrieve denied (not team member): user=%s msg=%s channel=%s team=%s",
-                user.id, message.id, message.channel_id, message.channel.team_id
+                user.id,
+                message.id,
+                message.channel_id,
+                message.channel.team_id,
             )
             return Response(
-                {"error": _("You have no access to this channel.")},
+                {"error": "You have no access to this channel."},
                 status=HTTP_404_NOT_FOUND,  # часто отдают 404 чтобы не палить существование
             )
 
@@ -148,21 +127,14 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
 
         return Response(
             {
-                "message": _("Message detail"),
+                "message": "Message detail",
                 "data": serializer.data,
             },
             status=HTTP_200_OK,
         )
 
-    def create(
-        self, 
-        request: Request
-        ) -> Response:
-
-        """
-        POST api/messages/ — create a message
-        """
-
+    def create(self, request: Request) -> Response:
+        """POST api/messages/ — create a message"""
         serializer = CreateMessageSerializer(
             data=request.data,
             context={"request": request},
@@ -180,29 +152,18 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
             )
 
         message = serializer.save()
-        send_message_notification.delay(
-            message.id, 
-            request.user.email
-        )
+        send_message_notification.delay(message.id, request.user.email)
 
         return Response(
             {
-                "message": _("Message created successfully"),
+                "message": "Message created successfully",
                 "data": MessageSerializer(message).data,
             },
             status=HTTP_201_CREATED,
         )
 
-    def partial_update(
-        self, 
-        request: Request, 
-        pk: int = None
-    ) -> Response:
-        
-        """
-        PATCH api/messages/{id}/ — update message (content only)
-        """
-
+    def partial_update(self, request: Request, pk: int = None) -> Response:
+        """PATCH api/messages/{id}/ — update message (content only)"""
         user = request.user
         message, error = self.get_message_or_404(pk)
         if error:
@@ -214,10 +175,12 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
         if not self._user_has_channel_access(user, message.channel):
             logger.warning(
                 "Message update denied (not team member): user=%s msg=%s channel=%s",
-                user.id, message.id, message.channel_id
+                user.id,
+                message.id,
+                message.channel_id,
             )
             return Response(
-                {"error": _("You have no access to this channel.")},
+                {"error": "You have no access to this channel."},
                 status=HTTP_404_NOT_FOUND,
             )
 
@@ -243,22 +206,14 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
 
         return Response(
             {
-                "message": _("Message updated successfully"),
+                "message": "Message updated successfully",
                 "data": MessageSerializer(message).data,
             },
             status=HTTP_200_OK,
         )
 
-    def destroy(
-        self, 
-        request: Request, 
-        pk: int = None
-    ) -> Response:
-        
-        """
-        DELETE api/messages/{id}/ — delete message
-        """
-        
+    def destroy(self, request: Request, pk: int = None) -> Response:
+        """DELETE api/messages/{id}/ — delete message"""
         user = request.user
         message, error = self.get_message_or_404(pk)
         if error:
@@ -270,10 +225,12 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
         if not self._user_has_channel_access(user, message.channel):
             logger.warning(
                 "Message delete denied (not team member): user=%s msg=%s channel=%s",
-                user.id, message.id, message.channel_id
+                user.id,
+                message.id,
+                message.channel_id,
             )
             return Response(
-                {"error": _("You have no access to this channel.")},
+                {"error": "You have no access to this channel."},
                 status=HTTP_404_NOT_FOUND,
             )
 
@@ -281,10 +238,12 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
         if message.author_id != user.id:
             logger.warning(
                 "Message delete denied (not author): msg=%s user=%s author=%s",
-                message.id, user.id, message.author_id
+                message.id,
+                user.id,
+                message.author_id,
             )
             return Response(
-                {"error": _("Only the author can delete this message.")},
+                {"error": "Only the author can delete this message."},
                 status=HTTP_400_BAD_REQUEST,
             )
 
@@ -294,6 +253,6 @@ class MessageViewSet(ViewSet, TeamAccessMixin, LoggingMixin):
         logger.info("Message deleted: id=%s by user=%s", msg_id, user.id)
 
         return Response(
-            {"message": _("Message deleted successfully")},
+            {"message": "Message deleted successfully"},
             status=HTTP_204_NO_CONTENT,
         )

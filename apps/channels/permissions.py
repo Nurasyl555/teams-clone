@@ -3,7 +3,7 @@ from rest_framework.permissions import BasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
-#Project modules
+# Project modules
 from apps.channels.models import Channel
 
 
@@ -18,17 +18,19 @@ class IsTeamMember(BasePermission):
         Specific team membership check is done in view
         """
         return request.user and request.user.is_authenticated
-    
-    def has_object_permission(self, request: Request, view: APIView, obj: Channel) -> bool:
+
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: Channel
+    ) -> bool:
         """
         Check if user is member of the channel's team.
         """
         if not request.user or not request.user.is_authenticated:
             return False
-        
+
         # Check if user is member of the team
         return obj.team.members.filter(id=request.user.id).exists()
-    
+
 
 class IsChannelMember(BasePermission):
     """
@@ -37,14 +39,16 @@ class IsChannelMember(BasePermission):
     -Private channels: only members have access
     """
 
-    def has_object_permission(self, request: Request, view: APIView, obj: Channel) -> bool:
+    def has_object_permission(
+        self, request: Request, view: APIView, obj: Channel
+    ) -> bool:
         """
         Check if user can access the channel.
         """
         if not request.user or not request.user.is_authenticated:
             return False
-        
-        #Public channel: check team membership
+
+        # Public channel: check team membership
         if not obj.is_private:
             return obj.team.members.filter(id=request.user.id).exists()
 

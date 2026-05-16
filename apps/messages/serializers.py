@@ -101,29 +101,30 @@ class CreateMessageSerializer(ModelSerializer):
             )
 
         return attrs
-    
+
     def create(self, validation_data: dict) -> Message:
         request = self.context.get("request")
 
-        message = Message.objects.create(
-            author = request.user,
-            **validation_data
-        )
+        message = Message.objects.create(author=request.user, **validation_data)
 
         logger.info(
             "message created: id=%s channel=%s author=%s parent=%s",
-            message.id, message.channel_id, message.author_id, message.parent_message_id
+            message.id,
+            message.channel_id,
+            message.author_id,
+            message.parent_message_id,
         )
 
         return message
-    
+
+
 class UpdateMessageSerializer(ModelSerializer):
     """
     UPDATE serializer (PATCH/PUT)
-    
+
     """
 
-    content = CharField(min_length = 1, trim_whitespace = True, required = True)
+    content = CharField(min_length=1, trim_whitespace=True, required=True)
 
     class Meta:
         model = Message
@@ -136,11 +137,13 @@ class UpdateMessageSerializer(ModelSerializer):
         if not user or not user.is_authenticated:
             raise ValidationError(_("Authentication required."))
 
-        # 
+        #
         if self.instance.author_id != user.id:
             logger.warning(
                 "Message update denied (not author): msg=%s user=%s author=%s",
-                self.instance.id, user.id, self.instance.author_id
+                self.instance.id,
+                user.id,
+                self.instance.author_id,
             )
             raise ValidationError(_("Only the author can edit this message."))
 
@@ -150,9 +153,6 @@ class UpdateMessageSerializer(ModelSerializer):
         instance.content = validated_data.get("content", instance.content)
         instance.save(update_fields=["content", "updated_at"])
 
-        logger.info(
-            "Message updated: id=%s author=%s",
-            instance.id, instance.author_id
-        )
+        logger.info("Message updated: id=%s author=%s", instance.id, instance.author_id)
 
         return instance

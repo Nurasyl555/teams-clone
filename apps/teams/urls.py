@@ -1,12 +1,10 @@
-from django.urls import path,include
+from django.urls import path, include
 
 from .views import TeamViewSet
 
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'teams',TeamViewSet,basename='team')
+router.register(r"teams", TeamViewSet, basename="team")
 
-urlpatterns = [
-    path('',include(router.urls))
-]
+urlpatterns = [path("", include(router.urls))]

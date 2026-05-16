@@ -9,87 +9,44 @@ from django.db.models import (
     FloatField,
     BooleanField,
     DateField,
-    FileField
-    
+    FileField,
 )
-from django.utils.translation import gettext_lazy as _
 from apps.abstract.models import AbstractModel
 
-from apps.teams.models import Team
+from apps.team.models import Team
 from apps.users.models import CustomUser
 
 
 class Assignments(AbstractModel):
-    team_id = ForeignKey(
-        Team,
-        on_delete = CASCADE,
-        related_name= 'team_id'
-    )
-    title = CharField(
-        max_length=200,
-        help_text=_('Title')
-    )
+    team_id = ForeignKey(Team, on_delete=CASCADE, related_name="team_id")
+    title = CharField(max_length=200, help_text="Title")
     description = TextField()
     due_data = DateField()
-    max_points = IntegerField(
-        help_text=_('Points')
-    )
-    class Meta:
-        verbose_name = _("Assignment")          
-        verbose_name_plural = _("Assignments")  
+    max_points = IntegerField(help_text="Points")
 
     def __str__(self):
-        return f'Assigments - team:{self.team_id},title:{self.title}'
-    
+        return f"Assigments - team:{self.team_id},title:{self.title}"
+
     def count_assigments(self):
         return self.title.count()
-    
+
 
 class Assignment_Submissions(Model):
 
     STATUS = [
-        ('upcoming', _('Upcoming')),                 
-        ('overdue', _('Overdue')),                   
-        ('completed', _('Completed')),               
-        ('completed_late', _('Completed Late'))      
-    ]  
+        ("upcoming", "Upcoming"),
+        ("overdue", "Overdue"),
+        ("completed", "Completed"),
+        ("completed_late", "Completed_Late"),
+    ]
 
-    assigment = ForeignKey(
-        Assignments,
-        on_delete=CASCADE,
-        related_name='submissions'
-    )
-    student_id = ForeignKey(
-        CustomUser,
-        on_delete=CASCADE,
-        related_name='student'
-    )
-    file = FileField(
-        upload_to='assignments/',
-        null=True,
-        blank=True
-    )
-    status = CharField(
-        max_length=20,
-        choices=STATUS,
-        default='upcoming'
-    )
-    points_awarded = FloatField(
-        default=0.0
-    )
-    submitted = BooleanField(
-        default=False
-    )
-    submitted_at = DateTimeField(
-        blank=True,
-        null=True
-    )
+    assigment = ForeignKey(Assignments, on_delete=CASCADE, related_name="submissions")
+    student_id = ForeignKey(CustomUser, on_delete=CASCADE, related_name="student")
+    file = FileField(upload_to="assignments/", null=True, blank=True)
+    status = CharField(max_length=20, choices=STATUS, default="upcoming")
+    points_awarded = FloatField(default=0.0)
+    submitted = BooleanField(default=False)
+    submitted_at = DateTimeField(blank=True, null=True)
 
-    class Meta:
-        verbose_name = _("Assignment Submission")         
-        verbose_name_plural = _("Assignment Submissions")
-        
     def __str__(self):
-        return f'Assigment ID:{self.assigment_id},status:{self.status}'
-
-
+        return f"Assigment ID:{self.assigment_id},status:{self.status}"

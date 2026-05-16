@@ -2,7 +2,6 @@ from pathlib import Path
 from datetime import timedelta
 from settings.conf import *
 from celery.schedules import crontab
-from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,12 +22,12 @@ INSTALLED_APPS = [
     "django_filters",
     "channels",
     "django_celery_beat",
-    #"debug_toolbar",
+    "debug_toolbar",
     "rest_framework_simplejwt.token_blacklist",
     # Local apps
     "apps.abstract",
     "apps.users",
-    "apps.teams",
+    "apps.team",
     "apps.channels",
     "apps.messages",
     "apps.assigments",
@@ -42,7 +41,7 @@ ASGI_APPLICATION = "settings.asgi.application"
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [REDIS_URL]},
+        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
     }
 }
 
@@ -50,7 +49,6 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -58,12 +56,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-'''
+"""
 if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
     MIDDLEWARE.insert(0, "debug_toolbar.middleware.DebugToolbarMiddleware")
     INTERNAL_IPS = ["127.0.0.1"]
-'''
+"""
 
 "logging"
 LOGGING = {
@@ -101,10 +99,14 @@ LOGGING = {
             "encoding": "utf-8",
         },
         "debug_only": {
-        "class": "logging.StreamHandler",
-        "level": "DEBUG",
-        "formatter": "simple",
-        "filters": ["require_debug_true"],
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "DEBUG",
+            "filename": "logs/debug_requests.log",
+            "maxBytes": 5 * 1024 * 1024,  # 10 MB
+            "backupCount": 3,
+            "formatter": "verbose",
+            "filters": ["require_debug_true"],
+            "encoding": "utf-8",
         },
     },
     "loggers": {
@@ -159,28 +161,19 @@ DATABASES = {
 
 # ── Password validation ────────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # ── Internationalisation ───────────────────────────────────────────────────────
-LANGUAGE_CODE = "en"  
+LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
-
-# Добавляем поддерживаемые языки
-LANGUAGES = (
-    ('en', _('English')),
-    ('ru', _('Russian')),
-)
-
-# Указываем, где будут лежать файлы переводов
-LOCALE_PATHS = [
-    BASE_DIR / 'locale',
-]
 
 # ── Static & Media ─────────────────────────────────────────────────────────────
 STATIC_URL = "/static/"
@@ -195,9 +188,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": (
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
@@ -224,17 +215,10 @@ SPECTACULAR_SETTINGS = {
 # ── Logging ───────────────────────────────────────────────────────────────────
 
 
-#CELERY SETTINGS
-CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = REDIS_URL
+# CELERY SETTINGS
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
 
-CEELERY_TASK_SERIALIZER = "json"
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_RESULT_SERIALIZER = "json"
-
-CELERY_TIMEZONE = "UTC"
-
-
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/1"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
@@ -249,9 +233,9 @@ CELERY_BEAT_SCHEDULE = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": REDIS_URL,
+        "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
     }
 }

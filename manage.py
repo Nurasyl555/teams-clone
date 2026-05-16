@@ -9,6 +9,7 @@ def main():
     # TEAMS_ENV_ID=local  → settings.env.local
     # TEAMS_ENV_ID=prod   → settings.env.prod
     from decouple import config
+
     env_id = config("TEAMS_ENV_ID", default="local")
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"settings.env.{env_id}")
 

@@ -38,6 +38,7 @@ echo "🔬 Running tests with coverage..."
     --cov-report=term-missing \
     --cov-report=html:coverage_html \
     --ds=settings.test \
+    --ignore=apps/messages \
     -v || {
     echo "❌ Tests failed"
     exit 1

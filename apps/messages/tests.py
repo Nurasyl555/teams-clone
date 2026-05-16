@@ -68,12 +68,15 @@ class MessageTestBase(APITestCase):
 
 # ── GET /api/messages/ ─────────────────────────────────────────────────────────
 
+
 class MessageListTests(MessageTestBase):
 
     def test_list_filtered_by_channel_id(self):
         """Team member gets only messages for the requested channel."""
         other_channel = Channel.objects.create(name="other", team=self.team)
-        Message.objects.create(content="Other", author=self.author, channel=other_channel)
+        Message.objects.create(
+            content="Other", author=self.author, channel=other_channel
+        )
 
         self.client.force_authenticate(self.author)
         response = self.client.get(self.list_url(), {"channel_id": self.channel.id})
@@ -103,15 +106,19 @@ class MessageListTests(MessageTestBase):
 
 # ── POST /api/messages/ ────────────────────────────────────────────────────────
 
+
 class MessageCreateTests(MessageTestBase):
 
     def test_create_message_success(self):
         """Team member can create a message in their channel."""
         self.client.force_authenticate(self.author)
-        response = self.client.post(self.list_url(), {
-            "content": "New message",
-            "channel": self.channel.id,
-        })
+        response = self.client.post(
+            self.list_url(),
+            {
+                "content": "New message",
+                "channel": self.channel.id,
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["data"]["content"], "New message")
@@ -119,11 +126,14 @@ class MessageCreateTests(MessageTestBase):
     def test_create_thread_reply(self):
         """Team member can reply to an existing message (thread)."""
         self.client.force_authenticate(self.member)
-        response = self.client.post(self.list_url(), {
-            "content": "Reply to parent",
-            "channel": self.channel.id,
-            "parent_message": self.message.id,
-        })
+        response = self.client.post(
+            self.list_url(),
+            {
+                "content": "Reply to parent",
+                "channel": self.channel.id,
+                "parent_message": self.message.id,
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["data"]["parent_message"], self.message.id)
@@ -131,15 +141,19 @@ class MessageCreateTests(MessageTestBase):
     def test_create_message_outsider_no_access(self):
         """User not in team cannot post to a channel."""
         self.client.force_authenticate(self.outsider)
-        response = self.client.post(self.list_url(), {
-            "content": "Sneaky message",
-            "channel": self.channel.id,
-        })
+        response = self.client.post(
+            self.list_url(),
+            {
+                "content": "Sneaky message",
+                "channel": self.channel.id,
+            },
+        )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 # ── GET /api/messages/{id}/ ────────────────────────────────────────────────────
+
 
 class MessageRetrieveTests(MessageTestBase):
 
@@ -168,14 +182,18 @@ class MessageRetrieveTests(MessageTestBase):
 
 # ── PATCH /api/messages/{id}/ ─────────────────────────────────────────────────
 
+
 class MessageUpdateTests(MessageTestBase):
 
     def test_update_by_author_success(self):
         """Author can update their own message content."""
         self.client.force_authenticate(self.author)
-        response = self.client.patch(self.detail_url(self.message.id), {
-            "content": "Updated content",
-        })
+        response = self.client.patch(
+            self.detail_url(self.message.id),
+            {
+                "content": "Updated content",
+            },
+        )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["data"]["content"], "Updated content")
@@ -183,11 +201,14 @@ class MessageUpdateTests(MessageTestBase):
     def test_update_by_non_author_forbidden(self):
         """Team member who is not the author cannot edit the message."""
         self.client.force_authenticate(self.member)
-        response = self.client.patch(self.detail_url(self.message.id), {
-            "content": "Hijacked content",
-        })
+        response = self.client.patch(
+            self.detail_url(self.message.id),
+            {
+                "content": "Hijacked content",
+            },
+        )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.message.refresh_from_db()
         self.assertEqual(self.message.content, "Hello world")
 
@@ -200,6 +221,7 @@ class MessageUpdateTests(MessageTestBase):
 
 
 # ── DELETE /api/messages/{id}/ ────────────────────────────────────────────────
+
 
 class MessageDeleteTests(MessageTestBase):
 
@@ -216,7 +238,7 @@ class MessageDeleteTests(MessageTestBase):
         self.client.force_authenticate(self.member)
         response = self.client.delete(self.detail_url(self.message.id))
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(Message.objects.filter(pk=self.message.id).exists())
 
     def test_delete_message_not_found(self):

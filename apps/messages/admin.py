@@ -14,9 +14,22 @@ class ReplyInline(TabularInline):
 
 @register(Message)
 class MessageAdmin(ModelAdmin):
-    list_display = ("id", "author", "channel", "short_content", "has_replies", "created_at", "updated_at")
+    list_display = (
+        "id",
+        "author",
+        "channel",
+        "short_content",
+        "has_replies",
+        "created_at",
+        "updated_at",
+    )
     list_filter = ("channel", "author", "created_at")
-    search_fields = ("content", "author__email", "author__first_name", "author__last_name")
+    search_fields = (
+        "content",
+        "author__email",
+        "author__first_name",
+        "author__last_name",
+    )
     raw_id_fields = ("author", "channel", "parent_message")
     readonly_fields = ("created_at", "updated_at")
     ordering = ("-created_at",)
@@ -24,9 +37,11 @@ class MessageAdmin(ModelAdmin):
 
     def short_content(self, obj):
         return obj.content[:60] + "..." if len(obj.content) > 60 else obj.content
+
     short_content.short_description = "Content"
 
     def has_replies(self, obj):
         return obj.replies.exists()
+
     has_replies.boolean = True
     has_replies.short_description = "Has replies"

@@ -10,7 +10,9 @@ def build_message_q(request, base_qs):
       ?author_id=<id>    — filter by author
       ?q=<text>          — full-text search on content
     """
-    channel_id = request.query_params.get("channel_id") or request.query_params.get("channel")
+    channel_id = request.query_params.get("channel_id") or request.query_params.get(
+        "channel"
+    )
     author_id = request.query_params.get("author_id")
     q_search = request.query_params.get("q")
 

@@ -2,14 +2,16 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from apps.users.models import CustomUser
 
+
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     """
     Admin model for CustomUser.
     Inherits from UserAdmin to ensure proper password hashing and permissions management.
     """
+
     model = CustomUser
-    
+
     # Fields shown in the user list view
     list_display = (
         "email",
@@ -21,7 +23,7 @@ class CustomUserAdmin(UserAdmin):
         "date_joined",
         "last_login",
     )
-    
+
     # Sidebar filters
     list_filter = (
         "is_staff",
@@ -29,16 +31,12 @@ class CustomUserAdmin(UserAdmin):
         "is_superuser",
         "date_joined",
     )
-    
+
     # Fields searchable in the admin interface
-    search_fields = (
-        "email", 
-        "first_name", 
-        "last_name"
-    )
-    
+    search_fields = ("email", "first_name", "last_name")
+
     ordering = ("-date_joined",)
-    
+
     readonly_fields = (
         "date_joined",
         "last_login",
@@ -54,17 +52,20 @@ class CustomUserAdmin(UserAdmin):
 
     # Layout for the 'Add User' form
     add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": (
-                "email",
-                "first_name",
-                "last_name",
-                "password1",
-                "password2",
-                "is_active",
-                "is_staff",
-                "is_superuser",
-            ),
-        }),
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "password1",
+                    "password2",
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                ),
+            },
+        ),
     )

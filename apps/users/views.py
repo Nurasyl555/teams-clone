@@ -1,6 +1,5 @@
 # Python modules
 import logging
-from typing import Any
 
 # Django modules
 from django.db.models import Q
@@ -246,7 +245,9 @@ class AuthViewSet(ViewSet):
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
-            return Response({"error": "Refresh token required"}, status=HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Refresh token required"}, status=HTTP_400_BAD_REQUEST
+            )
 
         try:
             token = RefreshToken(refresh_token)
@@ -321,7 +322,9 @@ class AuthViewSet(ViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(CustomUserSerializer(serializer.instance).data, status=HTTP_200_OK)
+        return Response(
+            CustomUserSerializer(serializer.instance).data, status=HTTP_200_OK
+        )
 
     @extend_schema(
         summary="List users (admin only)",

@@ -10,11 +10,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f"chat_{self.channel_id}"
 
         # need to comment this out for now since we don't have auth set up yet, but in a real app you'd want to check if the user is authenticated before allowing them to connect
-        user = self.scope["user"]  #<--
-        if not user.is_authenticated: #<--
-            await self.close() #<--
-            return #<--
-        #------- 3акомментируйте все что я тут указал, чтобы протестить через терминал (удобнее), но лучше все таки через авторизацию тестить (правильнее)
+        user = self.scope["user"]  # <--
+        if not user.is_authenticated:  # <--
+            await self.close()  # <--
+            return  # <--
+        # ------- 3акомментируйте все что я тут указал, чтобы протестить через терминал (удобнее), но лучше все таки через авторизацию тестить (правильнее)
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -25,11 +25,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # send connection confirmation + channel stats to the joining client
         stats = await fetch_message_stats_async(self.channel_id)
-        await self.send(text_data=json.dumps({
-            "type": "connection_established",
-            "message": "You're now connected",
-            "stats": stats,
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "connection_established",
+                    "message": "You're now connected",
+                    "stats": stats,
+                }
+            )
+        )
 
     async def disconnect(self, _close_code):
         await self.channel_layer.group_discard(
@@ -45,10 +49,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # process (spam check + clean) before broadcasting
         result = await process_message_async(raw_content)
         if not result["ok"]:
-            await self.send(text_data=json.dumps({
-                "type": "error",
-                "message": result["reason"],
-            }))
+            await self.send(
+                text_data=json.dumps(
+                    {
+                        "type": "error",
+                        "message": result["reason"],
+                    }
+                )
+            )
             return
 
         await self.channel_layer.group_send(
@@ -62,8 +70,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         """Called by the channel layer for every member in the group."""
-        await self.send(text_data=json.dumps({
-            "type": "chat",
-            "message": event["message"],
-            "sender": event["sender"],
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "chat",
+                    "message": event["message"],
+                    "sender": event["sender"],
+                }
+            )
+        )
